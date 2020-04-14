@@ -1,0 +1,55 @@
+```{r}
+#初始化
+rm(list=ls())
+setwd("C:/Users/Lenovo/Code/R/BP")
+#导入数据 划分训练集测试集
+data=read.csv("data.csv",head=T)
+train=data[1:675,] 
+test=data[676:725,]
+trainx=train[,1:5]
+trainy=train[,6]
+testx=test[,1:5]
+testy=test[,6]
+plot(data[,6],col=2,main="data",type = "l")
+lines(train[,6],col=1)
+legend("bottomright",c("train","test"),lty=1,col=c(1,2))
+```
+
+```{r}
+library(nnet) 
+#mynnet=nnet(trainx,trainy, size = 10, rang = 0.1,decay = 5e-4, maxit = 200)
+mynnet<-nnet(trainx,trainy,linout = T,size = 10,decay = 0.01,maxit = 1000,trace = F) 
+#nnet 单隐层神经网络;
+#linout = FALSE/TRUE 代表是否在最后的输出是线性的（未被激活函数激活）或者是非线性的（经过激活函数激活);
+#size:隐藏层中的单元数。
+#decay:权重衰减参数。
+#maxit:最大迭代次数。
+#trace:转换跟踪优化。
+```
+
+```{r}
+pred=predict(mynnet, trainx)
+plot(trainy,col=1,main="Train Data",type = "l")
+lines(pred,col=2)
+legend("bottomright",c("train","predict"),lty=1,col=c(1,2))
+```
+```{r}
+predict=predict(mynnet, testx)
+plot(testy,col=1,main="Test Data",type = "l")
+lines(predict,col=2)
+legend("topright",c("test","predict"),lty=1,col=c(1,2))
+```
+
+```{r}
+#RMSE均方根误差 在预测集上
+#MAE平均绝对误差
+RMSE=(sum((test-predict)^2)/length(predict))^0.5
+MAE=sum(abs(test-predict))/length(predict)
+MAPE=sum(abs(test-predict)/test)/length(predict)*100
+RMSE
+MAE
+MAPE
+```
+```{r}
+write.csv(predict,file = 'predict.csv')
+```
